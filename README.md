@@ -7,6 +7,8 @@ I did this while learning Crystal, as an exercise to dive deeper into various as
 
 This is also a useful tool for those coming to Crystal from Ruby and other dynamic languages. Some of the assumptions I had about certain idioms in Ruby, are no longer true and maybe reverse in Crystal. For example in Crystal `Array#find` is faster on a sorted Array than `Array#bsearch`, but in Ruby it's the [reverse](https://github.com/JuanitoFatas/fast-ruby#array)
 
+I'm planning to add some benchmarks for Sets, Tuples & NamedTuples as well as showcase some usa-cases vs Arrays & Hashes. If you have any intersting benchmarks, idioms, tips - please submit them!
+
 --------------------------------
 
 ## How to contribute new benchmarks
@@ -59,10 +61,8 @@ Idioms
 - [Proc & Block](#proc--block)
 - [String](#string)
 - [Hash](#hash)
-
-
 - [Enumerable](#enumerable)
-- [General](#general)
+
 
 --------------------------------
 
