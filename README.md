@@ -534,7 +534,7 @@ Hash#merge!  33.69k ( 29.68µs) (± 4.23%)  26415 B/op   3.74× slower
 ##### `Hash#merge` vs `Hash#merge!` [code](code/hash/merge-vs-merge-bang.cr)
 
 ```
-crystal code/hash/merge-vs-merge-bang.cr --release          423ms  Mon Feb 25 23:07:53 2019
+crystal code/hash/merge-vs-merge-bang.cr --release
 Crystal 0.27.2 (2019-02-05)
 
 LLVM: 6.0.1
@@ -573,6 +573,163 @@ sort_by + to_h 156.46k (  6.39µs) (± 2.96%)  5159 B/op   1.19× slower
    sort + to_h  185.7k (  5.39µs) (± 4.60%)  4330 B/op        fastest
 ```
 
+
+--------------------------------
+
+
+
+
+### Enumerable
+
+##### `Enumerable#each + push` vs `Enumerable#map` [code](code/enumerable/each-push-vs-map.cr)
+
+```
+crystal code/enumerable/each-push-vs-map.cr --release
+Crystal 0.27.2 (2019-02-05)
+
+LLVM: 6.0.1
+Default target: x86_64-apple-macosx
+
+Array#each + push 849.93k (  1.18µs) (± 0.75%)  1712 B/op   2.65× slower
+        Array#map   2.25M (443.66ns) (± 7.10%)   480 B/op        fastest
+```
+
+##### `Enumerable#each` vs `loop` vs `while` vs `step` vs `upto` vs `times` vs `downto`  [code](code/enumerable/each-vs-loop-vs-while-vs-step-vs-upto-vs-downto-vs-times.cr)
+`each` is the fastest way to iterate over an array. But if another approach makes your code clearer - use it.
+
+```
+crystal code/enumerable/each-vs-loop-vs-while-vs-step-vs-upto-vs-downto-vs-times.cr --release
+Crystal 0.27.2 (2019-02-05)
+
+LLVM: 6.0.1
+Default target: x86_64-apple-macosx
+
+  #step   6.07M (164.82ns) (± 2.22%)  0 B/op  65.18× slower
+  #upto   8.95M ( 111.7ns) (± 1.91%)  0 B/op  44.17× slower
+#downto   8.49M (117.72ns) (± 1.85%)  0 B/op  46.55× slower
+ #times  12.92M ( 77.42ns) (± 2.37%)  0 B/op  30.62× slower
+  #each 395.48M (  2.53ns) (± 4.25%)  0 B/op        fastest
+  while   7.57M (132.03ns) (± 2.05%)  0 B/op  52.21× slower
+   loop   6.03M (165.79ns) (± 2.12%)  0 B/op  65.56× slower
+```
+
+##### `Enumerable#each_with_index` vs `while` loop [code](code/enumerable/each_with_index-vs-while-loop.cr)
+
+```
+crystal code/enumerable/each_with_index-vs-while-loop.cr --release
+Crystal 0.27.2 (2019-02-05)
+
+LLVM: 6.0.1
+Default target: x86_64-apple-macosx
+
+     While Loop   9.54M (104.83ns) (± 2.32%)  0 B/op  41.38× slower
+each_with_index 394.74M (  2.53ns) (± 4.30%)  0 B/op        fastest
+```
+
+##### `Enumerable#map`. vs `Enumerable#flat_map` [code](code/enumerable/map-flatten-vs-flat_map.cr)
+
+
+```
+crystal code/enumerable/map-flatten-vs-flat_map.cr --release
+Crystal 0.27.2 (2019-02-05)
+
+LLVM: 6.0.1
+Default target: x86_64-apple-macosx
+
+Array#map.flatten  99.74k ( 10.03µs) (± 4.40%)  9646 B/op   1.30× slower
+   Array#flat_map 129.47k (  7.72µs) (± 3.14%)  7366 B/op        fastest
+```
+
+##### `Enumerable#reverse.each` vs `Enumerable#reverse_each` [code](code/enumerable/reverse-each-vs-reverse_each.cr)
+
+`Enumerable#reverse` allocates an extra array.
+`Enumerable#reverse_each` yields each value without allocating an extra array. <br>
+
+
+```
+crystal code/enumerable/reverse-each-vs-reverse_each.cr  --release
+Crystal 0.27.2 (2019-02-05)
+
+LLVM: 6.0.1
+Default target: x86_64-apple-macosx
+Array#reverse.each   2.16M ( 463.7ns) (± 5.72%)  480 B/op  175.64× slower
+Array#reverse_each 378.79M (  2.64ns) (± 5.22%)    0 B/op         fastes
+```
+
+##### `Enumerable#sort_by.first` vs `Enumerable#min_by` [code](code/enumerable/sort_by-first-vs-min_by.cr)
+`Enumerable#sort_by` performs a sort of the enumerable and allocates a
+new array the size of the enumerable.  `Enumerable#min_by` doesn't
+perform a sort or allocate an array the size of the enumerable.
+Similar comparisons hold for `Enumerable#sort_by.last` vs
+`Enumerable#max_by`, `Enumerable#sort.first` vs `Enumerable#min`, and
+`Enumerable#sort.last` vs `Enumerable#max`.
+
+```
+crystal code/enumerable/sort_by-first-vs-min_by.cr --release        Tue Feb 26 00:57:16 2019
+Crystal 0.27.2 (2019-02-05)
+
+LLVM: 6.0.1
+Default target: x86_64-apple-macosx
+
+         Enumerable#min_by 404.49M (  2.47ns) (± 3.90%)     0 B/op          fastest
+Enumerable#sort_by...first 360.16k (  2.78µs) (± 4.20%)  1888 B/op  1123.08× slower
+```
+
+##### `Enumerable#find` vs `Enumerable#select.first` [code](code/enumerable/select-first-vs-find.cr)
+
+Keeping with Crystal's convention of having more or less 1 obvious way of doing stuff, for example there is no `Enumerable#detect`, like in Ruby.
+
+```
+crystal code/enumerable/select-first-vs-find.cr --release    1.3m  Tue Feb 26 00:47:29 2019
+Crystal 0.27.2 (2019-02-05)
+
+LLVM: 6.0.1
+Default target: x86_64-apple-macosx
+
+Enumerable#select.first   6.79M (147.18ns) (± 3.54%)  48 B/op  66.37× slower
+        Enumerable#find 450.97M (  2.22ns) (± 5.47%)   0 B/op        fastest
+```
+
+##### `Enumerable#select.last` vs `Enumerable#reverse.detect` [code](code/enumerable/select-last-vs-reverse-find.cr)
+
+```
+crystal code/enumerable/select-last-vs-reverse-find.cr  --release
+Crystal 0.27.2 (2019-02-05)
+
+LLVM: 6.0.1
+Default target: x86_64-apple-macosx
+
+Enumerable#reverse.find   2.05M (487.74ns) (± 3.14%)  480 B/op   1.44× slower
+ Enumerable#select.last   2.95M (338.92ns) (± 3.59%)  145 B/op        fastest
+```
+
+##### `Enumerable#sort` vs `Enumerable#sort_by` [code](code/enumerable/sort-vs-sort_by.cr)
+
+```
+crystal code/enumerable/sort-vs-sort_by.cr --release
+Crystal 0.27.2 (2019-02-05)
+
+LLVM: 6.0.1
+Default target: x86_64-apple-macosx
+
+Enumerable#sort_by (Symbol#to_proc)  104.9k (  9.53µs) (± 2.24%)  3136 B/op   1.58× slower
+                 Enumerable#sort_by 104.28k (  9.59µs) (± 2.73%)  3136 B/op   1.59× slower
+                    Enumerable#sort 165.91k (  6.03µs) (± 2.02%)  1056 B/op        fastest
+```
+
+##### `Enumerable#reduce Block` vs `Enumerable#reduce Proc` [code](code/enumerable/inject-symbol-vs-block.cr)
+
+
+```
+crystal code/enumerable/reduce-proc-vs-block.cr --release
+Crystal 0.27.2 (2019-02-05)
+
+LLVM: 6.0.1
+Default target: x86_64-apple-macosx
+
+reduce to_proc 389.91M (  2.56ns) (± 5.00%)  0 B/op   1.03× slower
+  reduce block  401.7M (  2.49ns) (± 4.65%)  0 B/op        fastest
+```
 
 --------------------------------
 
